@@ -1,3 +1,4 @@
+#coding=utf-8
 import copy
 import numpy as np
 from config import *
@@ -5,6 +6,7 @@ from config import *
 def split_seq_TRE(seq, segNum, rect_anno):
     minNum = 20;
 
+    # 去掉一些帧, 这些帧不能被用于跟踪器初始化
     fileName = SEQ_SRC + seq.name + '/' + INIT_OMIT_FILE
     idxExclude = []
     if USE_INIT_OMIT and os.path.exists(fileName):
@@ -27,6 +29,7 @@ def split_seq_TRE(seq, segNum, rect_anno):
     idx = [x for x in idx if x > 0]
     for i in reversed(range(len(idx))):
         if seq.len - idx[i] + 1 >= minNum:
+            # 保证每段segment至少有minNum帧
             endSeg = idx[i]
             endSegIdx = i + 1
             break
@@ -39,6 +42,7 @@ def split_seq_TRE(seq, segNum, rect_anno):
     subSeqs = []
 
     for i in range(len(startFrIdxOne)):
+        # 为每一个segment重新分配合适的信息
         index = idx[startFrIdxOne[i] - 1] - 1
         subS = copy.deepcopy(seq)
         subS.startFrame = index + seq.startFrame
@@ -50,6 +54,7 @@ def split_seq_TRE(seq, segNum, rect_anno):
         subSeqs.append(subS)
         subAnno.append(anno)
 
+    # 返回序列列表(segNum个)和对应的gt列表
     return subSeqs, subAnno
 
 

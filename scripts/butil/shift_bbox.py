@@ -1,6 +1,8 @@
 
 def shift_init_BB(r, shiftType, imgH, imgW):
 
+    # r 是 [x_min, y_min, width, height], 返回的是改变的r
+    # x_min + width - 1 是 x_max(在图像中的), 另外这里的x_min, y_min 都是1-based
     center = [r[0]+r[2]/2.0, r[1]+r[3]/2.0]
 
     br_x = r[0] + r[2] - 1

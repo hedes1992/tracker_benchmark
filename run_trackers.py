@@ -1,3 +1,4 @@
+#coding=utf-8
 import getopt
 
 import numpy as np
@@ -12,6 +13,7 @@ def main(argv):
     loadSeqs = 'TB50'
     seqs = []
     try:
+        # h 代表help, t,e,s 对应后面的tracker, evaltype, sequence, t后面的：代表后续有参数
         opts, args = getopt.getopt(argv, "ht:e:s:",["tracker=","evaltype="
             ,"sequence="])
     except getopt.GetoptError:
@@ -25,6 +27,7 @@ def main(argv):
                 + '-e <evaltypes>'
             sys.exit(0)
         elif opt in ("-t", "--tracker"):
+            # tracker_name 构成的列表
             trackers = [x.strip() for x in arg.split(',')]
             # trackers = [arg]
         elif opt in ("-s", "--sequence"):
@@ -32,8 +35,10 @@ def main(argv):
             if loadSeqs != 'All' and loadSeqs != 'all' and \
                 loadSeqs != 'tb50' and loadSeqs != 'tb100' and \
                 loadSeqs != 'cvpr13':
+                # 序列名字的列表
                 loadSeqs = [x.strip() for x in arg.split(',')]
         elif opt in ("-e", "--evaltype"):
+            # 评估类型的列表
             evalTypes = [x.strip() for x in arg.split(',')]
             # evalTypes = [arg]
 

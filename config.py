@@ -13,10 +13,13 @@ except:
 
 WORKDIR = os.path.abspath('.')
 
+# 数据集存放地址
 SEQ_SRC = './data/'
 
+# 跟踪器代码存放地址
 TRACKER_SRC = './trackers/'
 
+# 评估结果存放地址
 RESULT_SRC = './results/{0}/' # '{0} : OPE, SRE, TRE'
 
 SETUP_SEQ = True

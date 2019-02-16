@@ -1,3 +1,4 @@
+#coding=utf-8
 import urllib2
 import zipfile
 import shutil
@@ -23,6 +24,7 @@ def get_sub_seqs(s, numSeg, evalType):
     s.subAnno = subAnno
 
     if evalType == 'OPE':
+        # 'OPE' 是 'TRE' 的第一项
         subS = subSeqs[0]
         subSeqs = []
         subSeqs.append(subS)
@@ -40,6 +42,7 @@ def get_sub_seqs(s, numSeg, evalType):
         img = Image.open(s.s_frames[0])
         (imgWidth, imgHeight) = img.size
         for i in range(len(shiftTypeSet)):
+            # 针对每个shiftType分别变动对应的初始BB
             s = copy.deepcopy(subS)
             shiftType = shiftTypeSet[i]
             s.init_rect = scripts.butil.shift_init_BB(s.init_rect, shiftType, 
@@ -56,6 +59,7 @@ def setup_seqs(loadSeqs):
         save_seq_config(seq)
 
 def save_seq_config(seq):
+    # 每个视频序列的config信息存储到视频文件夹下面的 cfg.json 中
     string = json.dumps(seq.__dict__, indent=2)
     src = os.path.join(SEQ_SRC, seq.name)
     configFile = open(src+'/cfg.json', 'wb')
@@ -86,6 +90,7 @@ def get_seq_names(loadSeqs):
     if type(loadSeqs) is list:
         return loadSeqs
     if loadSeqs.lower() == 'all':
+        # 去除 几个txt文件, 剩下的每个文件夹都是 单独的视频seq
         names =  os.listdir(SEQ_SRC)
         names.remove(ATTR_LIST_FILE)
         names.remove(ATTR_DESC_FILE)
@@ -120,6 +125,7 @@ def make_seq_configs(loadSeqs):
         if not os.path.exists(imgSrc):
             print name + ' does not have img directory'
             if DOWNLOAD_SEQS:
+                # 如果序列不存在且允许下载就从网站来下载
                 download_sequence(name)
             else:
                 print 'If you want to download sequences,\n' \
@@ -127,9 +133,11 @@ def make_seq_configs(loadSeqs):
                 sys.exit(1)
 
         imgfiles = sorted(os.listdir(imgSrc))
+        # 只允许 jpg png 图片类型
         imgfiles = [x for x in imgfiles if x.split('.')[1] in ['jpg', 'png']]
         nz, ext, startFrame, endFrame = get_format(name, imgfiles)
         
+        # attrSrc这个文本文件中包含了当前序列对应的属性, 如果没有这个文件的话, 从 attr_list.txt 读取得到
         attrSrc = os.path.join(src, ATTR_FILE)
         if not os.path.exists(attrSrc):
             attrlist_src = os.path.join(SEQ_SRC, ATTR_LIST_FILE)
@@ -148,6 +156,7 @@ def make_seq_configs(loadSeqs):
                 
         attrFile = open(attrSrc)
         lines = attrFile.readline()
+        # 视频属性的列表, 列表元素为str
         attributes = [x.strip() for x in lines.split(', ')]
 
         imgFormat = "{0}{1}{2}{3}".format("{0:0",nz,"d}.",ext)
@@ -164,17 +173,21 @@ def make_seq_configs(loadSeqs):
                 gtRect.append(map(int,line.strip().split(' ')))
 
         init_rect = [0,0,0,0]
+        # 该视频序列的名称, 图片所在文件夹, 开始帧数, 结束帧数, 属性列表, 名称长度
+        # 扩展名, 图像名称格式, gt ([int, int, int, int] 的列表), init_rect
         seq = Sequence(name, path, startFrame, endFrame,
             attributes, nz, ext, imgFormat, gtRect, init_rect)
         seqList.append(seq)
     return seqList
 
 def get_format(name, imgfiles):
+    # 返回图片名(数字, 不足以左0补齐)长度, 图片扩展名, 起始帧, 结束帧
     filenames = imgfiles[0].split('.')
     nz = len(filenames[0])
     ext = filenames[1]
     startFrame = int(filenames[0])
     endFrame = startFrame + len(imgfiles) - 1
+    # pami paper中列出的几个起始帧异常的视频seq
     if name == "David":
         startFrame = 300
         endFrame = 770
@@ -189,8 +202,10 @@ def get_format(name, imgfiles):
     return nz, ext, startFrame, endFrame
 
 def download_sequence(seqName):
+    # 从OTB官方网站下载对应序列的压缩包
     file_name = SEQ_SRC + seqName + '.zip'
 
+    # 有三个序列各自都包含了两个目标
     if seqName == 'Jogging-1' or seqName == 'Jogging-2':
         url = DOWNLOAD_URL.format('Jogging')
         download_and_extract_file(url, file_name, SEQ_SRC)
@@ -221,6 +236,7 @@ def download_sequence(seqName):
         shutil.move(src + 'groundtruth_rect.2.txt', dst2 + GT_FILE)
         shutil.rmtree(src)
 
+    # Human4 中只用到第二个目标
     elif seqName == 'Human4-1' or seqName == 'Human4-2':
         url = DOWNLOAD_URL.format('Human4')
         download_and_extract_file(url, file_name, SEQ_SRC)
@@ -243,7 +259,8 @@ def download_sequence(seqName):
         shutil.rmtree(SEQ_SRC + '__MACOSX')
         
 
-def download_and_extract_file(url, dst, ext_dst):  
+def download_and_extract_file(url, dst, ext_dst):
+    # 下载地址为url, dst为zip文件的存储地址, 在ext_dst里面进行解压
     print 'Connecting to {0} ...'.format(url)
     try:
         u = urllib2.urlopen(url)
